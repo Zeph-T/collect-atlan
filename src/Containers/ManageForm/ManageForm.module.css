@@ -1,0 +1,107 @@
+.container {
+  display: flex;
+  flex-direction: column;
+}
+
+.header {
+  padding: 0.7rem 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  border-bottom: 1px solid #ccc;
+}
+
+.headerLeft {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  width: 100%;
+}
+
+.headerButtons {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.bodyData {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1rem;
+  background-color: #fcfcfc;
+  min-height: calc(100vh - 4.2rem);
+}
+
+.titleInput {
+  width: 100%;
+  max-width: 30rem;
+}
+
+.questionType {
+  width: 100%;
+  max-width: 15rem;
+}
+
+.questions {
+  display: flex;
+  flex-direction: column;
+  gap: 2.5rem;
+}
+
+.question {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.questionHeader {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.questionHeaderLeft {
+  display: flex;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  gap: 0.7rem;
+  width: 100%;
+  max-width: 75vw;
+}
+
+.questionTitle {
+  width: 100%;
+  max-width: 40rem;
+}
+
+.questionHeaderRight {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.5rem;
+}
+
+.questionDelete {
+  margin-bottom: 0.3rem;
+}
+
+.questionOptions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+}
+
+.questionOption {
+  display: flex;
+  justify-content: space-between;
+}
+
+.questionOptionInput {
+  width: 100%;
+  max-width: 30rem;
+}
+
+.questionOptionAdd {
+  width: fit-content;
+}
