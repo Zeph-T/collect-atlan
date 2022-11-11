@@ -1,0 +1,4 @@
+node_modules
+
+api/controllers/integrations/google-sheets/credentials.json
+api/controllers/integrations/google-sheets/token.json
