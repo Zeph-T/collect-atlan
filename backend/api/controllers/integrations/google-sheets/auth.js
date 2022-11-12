@@ -11,7 +11,6 @@ const SCOPES = ['https://www.googleapis.com/auth/spreadsheets'];
 // time.
 const TOKEN_PATH = path.join(process.cwd(), 'api/controllers/integrations/google-sheets/token.json');
 const CREDENTIALS_PATH = path.join(process.cwd(), 'api/controllers/integrations/google-sheets/credentials.json');
-console.log(TOKEN_PATH)
 async function loadSavedCredentialsIfExist() {
     try {
         const content = await fs.readFile(TOKEN_PATH);

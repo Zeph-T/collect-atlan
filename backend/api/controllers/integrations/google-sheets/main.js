@@ -2,7 +2,6 @@ import { authorize } from "./auth"
 import { google } from 'googleapis';
 import Integration from "../../../models/integration";
 import mongoose from "mongoose";
-import Form from "../../../models/form";
 
 export async function trackDataGoogleSheet(req, res) {
     try {

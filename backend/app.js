@@ -2,7 +2,7 @@ import express from 'express';
 import mongoose from 'mongoose';
 var bodyParser = require('body-parser');
 
-const mongodb_url = "mongodb+srv://root:root1234@shopperz.kfza0.mongodb.net/collectDB"
+const mongodb_url = process.env.MONGODB_CONN_STRING
 
 mongoose.connect(mongodb_url,{ useNewUrlParser: true, useUnifiedTopology: true}).then(()=>{
     console.log('DB connected!');
