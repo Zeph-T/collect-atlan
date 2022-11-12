@@ -2,11 +2,13 @@ import express from 'express';
 import mongoose from 'mongoose';
 var bodyParser = require('body-parser');
 
-// mongoose.connect('',{ useNewUrlParser: true, useUnifiedTopology: true}).then(()=>{
-//     console.log('DB connected!');
-// }).catch(err=>{
-//     console.log('Error Connecting DB'+err.stack);
-// })
+const mongodb_url = "mongodb+srv://root:root1234@shopperz.kfza0.mongodb.net/collectDB"
+
+mongoose.connect(mongodb_url,{ useNewUrlParser: true, useUnifiedTopology: true}).then(()=>{
+    console.log('DB connected!');
+}).catch(err=>{
+    console.log('Error Connecting DB'+err.stack);
+})
 
 const port = process.env.PORT || 8000;
 const app = express();

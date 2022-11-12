@@ -1,10 +1,18 @@
 const mongoose = require("mongoose");
-const questionTypes = require("../controllers/utilities")
+const {questionTypes} = require("../controllers/utilities")
 
 const questionSchema = mongoose.Schema({
     name : {
         type : String,
         requried : true
+    },
+    formId : {
+        type : mongoose.Types.ObjectId,
+        ref : "Form"
+    },
+    isValid : {
+        type : Boolean,
+        default : true
     },
     description : {
         type : String
@@ -29,4 +37,4 @@ const questionSchema = mongoose.Schema({
     }
 })
 
-module.exports = mongoose.Schema(questionSchema,"questions")
+export default mongoose.model("questions",questionSchema)

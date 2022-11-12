@@ -1,24 +1,35 @@
 import { authorize } from "./auth"
 import { google } from 'googleapis';
-
+import Integration from "../../../models/integration";
+import mongoose from "mongoose";
+import Form from "../../../models/form";
 
 export async function trackDataGoogleSheet(req, res) {
     try {
         if (req.body && req.body.formId) {
-            authorize().then(async (auth) => {
-                const sheets = google.sheets({ version: 'v4', auth: auth });
+            Integration.findOne({ formId: mongoose.Types.ObjectId(req.body.formId), type: "GOOGLE_SHEETS", isValid: true }).then(oIntegration => {
+                if (oIntegration) throw "Already Connected!";
+                authorize().then(async (auth) => {
+                    const sheets = google.sheets({ version: 'v4', auth: auth });
 
-                const response = await sheets.spreadsheets.create({
-                    resource: {
-                        properties: { title: req.body.formId }
-                    }
-                });
-                console.log(response)
-                return res.status(200).send(response)
-            }).catch(err => {
-                console.log(err);
-                return res.send(err);
-            })
+                    const response = await sheets.spreadsheets.create({
+                        resource: {
+                            properties: { title: req.body.formId }
+                        }
+                    });
+                    const newIntegration = new Integration();
+                    newIntegration.metadata = response.data;
+                    newIntegration.type = "GOOGLE_SHEETS";
+                    newIntegration.formId = mongoose.Types.ObjectId(req.body.formId);
+                    newIntegration.save((err, oIntegration) => {
+                        if (err) return res.status(400).send({ error: err });
+                        else return res.status(200).send(oIntegration);
+                    })
+                }).catch(err => {
+                    console.log(err);
+                    return res.send(err);
+                })
+            }).catch(err => res.status(400).send({ error: err }))
         } else throw new Error('No Form ID');
     } catch (err) {
         console.log(err);
@@ -69,8 +80,7 @@ async function makeHeaderBold(sheets, spreadsheetId) {
             const response = await sheets.spreadsheets.batchUpdate({
                 spreadsheetId,
                 resource: batchUpdateRequest,
-            }); 
-            console.log(response);
+            });
             resolve(JSON.stringify(response, null, 2));
         } catch (err) {
             console.error(err);
@@ -115,11 +125,6 @@ async function addDataSpreadSheet(sheets, spreadsheetId, values) {
                     // Handle error
                     reject(err);
                 } else {
-                    console.log(
-                        '%d cells updated on range: %s',
-                        result.data.updates.updatedCells,
-                        result.data.updates.updatedRange
-                    );
                     resolve(true);
                 }
             }
@@ -130,23 +135,30 @@ async function addDataSpreadSheet(sheets, spreadsheetId, values) {
 
 export async function appendDataGoogleSheet(req, res) {
     try {
-        authorize().then(async auth => {
-            const sheets = google.sheets({ version: 'v4', auth });
-            const obj = req.body.data;
-            const spreadsheetId = req.body.id;
-            const headerExists = await checkIfHeaderExists(sheets, spreadsheetId)
-            if (headerExists === false) {
-                const keys = [Object.keys(obj)];
-                await addDataSpreadSheet(sheets, spreadsheetId, keys);
-                await makeHeaderBold(sheets, spreadsheetId);
-            }
-            const values = [Object.values(obj)];
-            await addDataSpreadSheet(sheets, spreadsheetId, values)
-            return res.status(200).send("Added Data!");
-        }).catch(err => {
-            console.log(err);
-            return res.send(err);
-        })
+        if (req.params.formId) {
+            Integration.findOne({ formId: mongoose.Types.ObjectId(req.params.formId), type: "GOOGLE_SHEETS", isValid: true }).then(oIntegration => {
+                if (oIntegration === null) throw "No Integration Found!";
+                authorize().then(async auth => {
+                    const sheets = google.sheets({ version: 'v4', auth });
+                    const obj = req.body;
+                    const spreadsheetId = oIntegration.metadata.spreadsheetId;
+                    const headerExists = await checkIfHeaderExists(sheets, spreadsheetId)
+                    if (headerExists === false) {
+                        const keys = [Object.keys(obj)];
+                        await addDataSpreadSheet(sheets, spreadsheetId, keys);
+                        await makeHeaderBold(sheets, spreadsheetId);
+                    }
+                    const values = [Object.values(obj)];
+                    await addDataSpreadSheet(sheets, spreadsheetId, values)
+                    return res.status(200).send("Added Data!");
+                }).catch(err => {
+                    console.log(err);
+                    return res.send(err);
+                })
+            })
+        } else {
+            throw new Error("No Form Id found!");
+        }
     } catch (err) {
         return res.send(err);
     }
