@@ -28,7 +28,9 @@ import {
   IconCopy,
 } from "@tabler/icons";
 import styles from "./PreviewForm.module.css";
-import { Link } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
+import axios from "axios";
+import * as api from "../../Utils/constants";
 
 const parseQuestionKey = (key) => {
   return key?.replace(/\s+/g, "_").toLowerCase();
@@ -37,6 +39,7 @@ const parseQuestionKey = (key) => {
 const PreviewForm = ({}) => {
   const [form, setForm] = React.useState({});
   const [answers, setAnswers] = React.useState({});
+  const { formId } = useParams();
 
   useEffect(() => {
     fetchFormData();
@@ -44,36 +47,17 @@ const PreviewForm = ({}) => {
 
   const fetchFormData = async () => {
     try {
-      const tempData = new Array(10).fill({}).map((_, i) => ({
-        _id: i,
-        name: `Form ${i + 1}`,
-        status: ["draft", "live"][Math.floor(Math.random() * 2) + 1],
-        published: new Date().toISOString(),
-        modified: new Date().toISOString(),
-        questions: new Array(10).fill({}).map((_, i) => ({
-          id: i,
-          question: `Question ${i + 1}`,
-          type: ["single", "multiple", "text", "number"][
-            Math.floor(Math.random() * 4)
-          ],
-          mendatory: Math.random() > 0.5,
-          meta: {
-            options: new Array(4).fill({}).map((_, i) => ({
-              value: `Option ${i}`,
-            })),
-          },
-        })),
-        responses: new Array(Math.floor(Math.random() * 50))
-          .fill({})
-          .map((_, i) => ({
-            id: i,
-            answers: new Array(10).fill({}).map((_, i) => ({
-              id: i,
-              answer: `Answer ${i}`,
-            })),
-          })),
-      }));
-      setForm(tempData[0]);
+      const fetcehedForm = async () => {
+        try {
+          const { data } = await axios.get(api.GET_FORM_DATA_BY_ID + formId);
+          console.log(data);
+          setForm(data);
+        } catch (err) {
+          alert(err);
+          console.log(err);
+        }
+      };
+      setForm(fetcehedForm);
     } catch (err) {
       alert(err);
       console.log(err);
@@ -83,41 +67,15 @@ const PreviewForm = ({}) => {
   return (
     <div className={styles.container}>
       <div className={styles.header}>
-        <div className={styles.headerLeft}>
-          <Link to="/">
-            <IconArrowLeft size={24} />
-          </Link>
-          <Title
-            order={2}
-            style={{
-              marginBottom: "0.5rem",
-            }}
-          >
-            {form.name}
-          </Title>
-        </div>
-        <div className={styles.headerButtons}>
-          <CopyButton value={window.location.href} timeout={1000}>
-            {({ copied, copy }) => (
-              <Tooltip
-                label={copied ? "Copied" : "Copy"}
-                withArrow
-                position="right"
-              >
-                <Button
-                  variant="outline"
-                  color={copied ? "teal" : "gray"}
-                  leftIcon={
-                    copied ? <IconCheck size={16} /> : <IconCopy size={16} />
-                  }
-                  onClick={copy}
-                >
-                  Share
-                </Button>
-              </Tooltip>
-            )}
-          </CopyButton>
-        </div>
+        <Title
+          order={2}
+          style={{
+            marginBottom: "0.5rem",
+          }}
+          align="center"
+        >
+          {form.name}
+        </Title>
       </div>
       <div className={styles.bodyData}>
         <div className={styles.questions}>
@@ -152,12 +110,12 @@ const PreviewForm = ({}) => {
                     });
                   }}
                 >
-                  {question.meta.options.map((option, optionIndex) => (
+                  {question.metadata.options.map((option, optionIndex) => (
                     <>
                       <Radio
                         key={optionIndex}
-                        value={option.value}
-                        label={option.value}
+                        value={option.name}
+                        label={option.name}
                         color="teal"
                       />
                     </>
@@ -176,11 +134,11 @@ const PreviewForm = ({}) => {
                     });
                   }}
                 >
-                  {question.meta.options.map((option, optionIndex) => (
+                  {question.metadata.options.map((option, optionIndex) => (
                     <Checkbox
                       key={optionIndex}
-                      value={option.value}
-                      label={option.value}
+                      value={option.name}
+                      label={option.name}
                       color="teal"
                     />
                   ))}

@@ -1,16 +1,28 @@
 import React, { useEffect } from "react";
 import { useSelector } from "react-redux";
-import { Badge, Button, Code, Title, Text } from "@mantine/core";
+import {
+  Badge,
+  Button,
+  Code,
+  Title,
+  Text,
+  Center,
+  Modal,
+  TextInput,
+} from "@mantine/core";
 import { Tabs } from "@mantine/core";
 import { IconPhoto, IconMessageCircle, IconSettings } from "@tabler/icons";
 import styles from "./Home.module.css";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import * as api from "../../Utils/constants";
 import axios from "axios";
 
 const Home = () => {
   const exampleState = useSelector((state) => state.example.exampleState);
   const [forms, setForms] = React.useState([]);
+  const [opened, setOpened] = React.useState(false);
+  const [formName, setFormName] = React.useState("");
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchForms();
@@ -18,47 +30,33 @@ const Home = () => {
 
   const fetchForms = async () => {
     try {
-      const { data }  = await axios.get(api.GET_ALL_FORMS);
-      const form_data = data.map(form=>{
+      const { data } = await axios.get(api.GET_ALL_FORMS);
+      const form_data = data.map((form) => {
         return {
           ...form,
-          questions : [],
-          responses : []
-        }
-      })
-      console.log("response data",data);
-      const tempData = new Array(10).fill({}).map((_, i) => ({
-        _id: i,
-        name: `Form ${i}`,
-        status: ["draft", "live"][Math.floor(Math.random() * 2)],
-        published: new Date().toISOString(),
-        modified: new Date().toISOString(),
-        questions: new Array(Math.floor(Math.random() * 10))
-          .fill({})
-          .map((_, i) => ({
-            id: i,
-            question: `Question ${i}`,
-            type: ["single", "multiple", "text", "number"][
-              Math.floor(Math.random() * 4)
-            ],
-            mendatory: Math.random() > 0.5,
-            meta: {
-              options: new Array(4).fill({}).map((_, i) => ({
-                value: `Option ${i}`,
-              })),
-            },
-          })),
-        responses: new Array(Math.floor(Math.random() * 50))
-          .fill({})
-          .map((_, i) => ({
-            id: i,
-            answers: new Array(10).fill({}).map((_, i) => ({
-              id: i,
-              answer: `Answer ${i}`,
-            })),
-          })),
-      }));
+          questions: [],
+          responses: [],
+        };
+      });
+      console.log("response data", data);
       setForms(form_data);
+    } catch (err) {
+      alert(err);
+      console.log(err);
+    }
+  };
+
+  const createNewForm = async () => {
+    try {
+      const { data } = await axios.post(api.CREATE_FORM, {
+        name: formName,
+      });
+
+      console.log("response data", data);
+      setOpened(false);
+      setFormName("");
+      navigate(`/manage-form/${data._id}`);
+      fetchForms();
     } catch (err) {
       alert(err);
       console.log(err);
@@ -76,13 +74,17 @@ const Home = () => {
         >
           Your Forms
         </Title>
-        <Link to="/create-form">
-          <Button variant="outline">Create New Form</Button>
-        </Link>
+        <Button onClick={() => setOpened(true)} variant="outline">
+          Create New Form
+        </Button>
       </div>
       <div className={styles.formsList}>
         {forms.map((form) => (
-          <Link to={"/manage-form/" + form._id} state = {{form : form}} className={styles.formCard}>
+          <Link
+            to={"/manage-form/" + form._id}
+            state={{ form: form }}
+            className={styles.formCard}
+          >
             <div className={styles.formCardHeader}>
               <Title order={4}>{form.name}</Title>
               <Badge>{form.status}</Badge>
@@ -137,31 +139,34 @@ const Home = () => {
           </Link>
         ))}
       </div>
-      {/* <Tabs defaultValue="gallery">
-        <Tabs.List>
-          <Tabs.Tab value="gallery" icon={<IconPhoto size={14} />}>
-            Gallery
-          </Tabs.Tab>
-          <Tabs.Tab value="messages" icon={<IconMessageCircle size={14} />}>
-            Messages
-          </Tabs.Tab>
-          <Tabs.Tab value="settings" icon={<IconSettings size={14} />}>
-            Settings
-          </Tabs.Tab>
-        </Tabs.List>
-
-        <Tabs.Panel value="gallery" pt="xs">
-          Gallery tab content
-        </Tabs.Panel>
-
-        <Tabs.Panel value="messages" pt="xs">
-          Messages tab content
-        </Tabs.Panel>
-
-        <Tabs.Panel value="settings" pt="xs">
-          Settings tab content
-        </Tabs.Panel>
-      </Tabs> */}
+      <Center>
+        <Modal
+          centered
+          opened={opened}
+          withCloseButton
+          onClose={() => setOpened(false)}
+          size="lg"
+          position={{ top: 20, left: 20 }}
+          radius="md"
+          title="Create New Form"
+        >
+          <form className={styles.modalContainer} onSubmit={createNewForm}>
+            <TextInput
+              label="Form Name"
+              placeholder="Enter Form Name"
+              value={formName}
+              onChange={(e) => setFormName(e.target.value)}
+            />
+            <Button
+              type="submit"
+              variant="primary"
+              style={{ marginTop: "1rem" }}
+            >
+              Create
+            </Button>
+          </form>
+        </Modal>
+      </Center>
     </div>
   );
 };

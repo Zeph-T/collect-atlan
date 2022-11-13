@@ -11,8 +11,7 @@ const App = () => {
     <Routes>
       <Route exact path="/" element={<Home />} />
       <Route exact path="/manage-form/:formId" element={<ManageForm />} />
-      <Route exact path="/create-form" element={<ManageForm isNew />} />
-      <Route exact path="/preview-form/:formId" element={<PreviewForm />} />
+      <Route exact path="/form/:formId" element={<PreviewForm />} />
     </Routes>
   );
 };

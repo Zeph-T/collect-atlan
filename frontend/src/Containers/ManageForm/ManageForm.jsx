@@ -14,7 +14,7 @@ import {
   Modal,
   Divider,
   Chip,
-  Center
+  Center,
 } from "@mantine/core";
 import { Tabs } from "@mantine/core";
 import {
@@ -22,31 +22,29 @@ import {
   IconListDetails,
   IconListCheck,
   IconTrash,
-  IconEdit
+  IconEdit,
 } from "@tabler/icons";
 import styles from "./ManageForm.module.css";
 import { Link, useParams, useLocation } from "react-router-dom";
 import axios from "axios";
-import { GET_FORM_DATA_BY_ID } from "../../Utils/constants";
-
-
+import * as api from "../../Utils/constants";
 
 const ManageForm = ({ isNew }) => {
-  const exampleState = useSelector((state) => state.example.exampleState);
   const [form, setForm] = React.useState([]);
   const [opened, setOpened] = React.useState(false);
+  const [editOpened, setEditOpened] = React.useState(false);
   const [newQuestion, setNewQuestion] = React.useState({
     question: "",
     type: "text",
     mendatory: false,
-    meta: {
-      options: []
-    }
+    metadata: {
+      options: [],
+    },
   });
+  const [editQuestion, setEditQuestion] = React.useState(null);
   const [questions, setQuestions] = React.useState([]);
   const { formId } = useParams();
-  const { state } = useLocation();
-  const form_data = state.form;
+  const location = useLocation();
 
   useEffect(() => {
     !isNew && fetchForms();
@@ -54,46 +52,10 @@ const ManageForm = ({ isNew }) => {
 
   const fetchForms = async () => {
     try {
-      const { data } = await axios.get(GET_FORM_DATA_BY_ID + formId);
-      const formData = {
-        ...form_data,
-        questions: data,
-        responses: []
-      };
-      // const tempData = new Array(10).fill({}).map((_, i) => ({
-      //   _id: i,
-      //   name: `Form ${i + 1}`,
-      //   status: ["draft", "live"][Math.floor(Math.random() * 2) + 1],
-      //   published: new Date().toISOString(),
-      //   modified: new Date().toISOString(),
-      //   questions: new Array(Math.floor(Math.random() * 10))
-      //     .fill({})
-      //     .map((_, i) => ({
-      //       id: i,
-      //       question: `Question ${i + 1}`,
-      //       type: ["single", "multiple", "text", "number"][
-      //         Math.floor(Math.random() * 4)
-      //       ],
-      //       mendatory: Math.random() > 0.5,
-      //       meta: {
-      //         options: new Array(4).fill({}).map((_, i) => ({
-      //           value: `Option ${i}`,
-      //         })),
-      //       },
-      //     })),
-      //   responses: new Array(Math.floor(Math.random() * 50))
-      //     .fill({})
-      //     .map((_, i) => ({
-      //       id: i,
-      //       answers: new Array(10).fill({}).map((_, i) => ({
-      //         id: i,
-      //         answer: `Answer ${i}`,
-      //       })),
-      //     })),
-      // }));
-      setForm(formData);
-      setQuestions(data);
-      console.log(data)
+      const { data } = await axios.get(api.GET_FORM_DATA_BY_ID + formId);
+      console.log(data);
+      setForm(data);
+      setQuestions(data.questions);
     } catch (err) {
       alert(err);
       console.log(err);
@@ -108,7 +70,8 @@ const ManageForm = ({ isNew }) => {
             <IconArrowLeft size={24} />
           </Link>
           <Title
-            order={2}
+            order={1}
+            size="1.25rem"
             style={{
               marginBottom: "0.5rem",
             }}
@@ -117,156 +80,187 @@ const ManageForm = ({ isNew }) => {
           </Title>
         </div>
         <div className={styles.headerButtons}>
-          {isNew ? (
+          <Link to={`/form/${formId}`} target="_blank">
             <Button variant="subtle" color="gray">
-              Save as Draft
+              Preview
             </Button>
-          ) : null}
-          <Button variant="outline">Publish Form</Button>
+          </Link>
+          <Button
+            variant="outline"
+            onClick={async () => {
+              try {
+                await axios.post(api.UPDATE_FORM, {
+                  ...form,
+                });
+                console.log(form);
+                console.log("response data", form);
+              } catch (err) {
+                alert("Error in updating form");
+                console.log(err);
+              }
+            }}
+          >
+            SaveButton
+          </Button>
         </div>
       </div>
       <div className={styles.bodyData}>
-        <TextInput
-          className={styles.titleInput}
-          placeholder="Form Name"
-          label="Form Name"
-          value={form.name || ""}
-          onChange={(e) => {
-            setForm({ ...form, name: e.currentTarget.value });
-          }}
-          withAsteriskform_questions
-        />
-        <Tabs defaultValue="questions">
-          <Tabs.List>
-            <Tabs.Tab value="questions" icon={<IconListDetails size={14} />}>
-              Questions
-            </Tabs.Tab>
-            <Tabs.Tab value="rules" icon={<IconListCheck size={14} />}>
-              Rules
-            </Tabs.Tab>
-          </Tabs.List>
+        <div className={styles.LeftSide}>
+          <TextInput
+            className={styles.titleInput}
+            placeholder="Form Name"
+            label="Form Name"
+            value={form.name || ""}
+            onChange={(e) => {
+              setForm({ ...form, name: e.currentTarget.value });
+            }}
+            withAsteriskform_questions
+          />
+          <Tabs defaultValue="questions">
+            <Tabs.List>
+              <Tabs.Tab value="questions" icon={<IconListDetails size={14} />}>
+                Questions
+              </Tabs.Tab>
+              <Tabs.Tab value="rules" icon={<IconListCheck size={14} />}>
+                Rules
+              </Tabs.Tab>
+            </Tabs.List>
 
-          <Tabs.Panel value="questions" pt="xs">
-            <div className={styles.questions}>
-              {questions && questions.map((question, questionIndex) => (
-                <div className={styles.question} key={questionIndex}>
-                  <div className={styles.questionHeader}>
-                    <div className={styles.questionHeaderLeft}>
-                      <Badge variant="filled" color="gray.7" size="xl">
-                        {questionIndex + 1}
-                      </Badge>
-                      <Text fw={100}>{question.question}</Text>
+            <Tabs.Panel value="questions" pt="xs">
+              <div className={styles.questions}>
+                {questions &&
+                  questions.map((question, questionIndex) => (
+                    <div className={styles.question} key={questionIndex}>
+                      <div className={styles.questionHeader}>
+                        <div className={styles.questionHeaderLeft}>
+                          <Badge variant="filled" color="gray.7" size="xl">
+                            {questionIndex + 1}
+                          </Badge>
+                          <Text fw={100}>{question.question}</Text>
+                        </div>
+                        <div className={styles.questionHeaderRight}>
+                          <ActionIcon
+                            className={styles.questionDelete}
+                            onClick={() => {
+                              setEditQuestion(question);
+                              setEditOpened(true);
+                            }}
+                            color="red.5"
+                            variant="light"
+                          >
+                            <IconEdit size={20} />
+                          </ActionIcon>
+                          <ActionIcon
+                            className={styles.questionDelete}
+                            onClick={async () => {
+                              const tempQuestions = JSON.parse(
+                                JSON.stringify(questions)
+                              );
+                              tempQuestions.splice(questionIndex, 1);
+                              await axios.get(
+                                api.DELETE_QUESTION + question._id
+                              );
+
+                              setQuestions(tempQuestions);
+                            }}
+                            color="red.5"
+                            variant="light"
+                          >
+                            <IconTrash size={20} />
+                          </ActionIcon>
+                        </div>
+                      </div>
+                      <Divider my="xs"></Divider>
                     </div>
-                    <div className={styles.questionHeaderRight}>
-                      <ActionIcon
-                        className={styles.questionDelete}
-                        //onClick={}
-                        color="red.5"
-                        variant="light"
-                      >
-                        <IconEdit size={20} />
-                      </ActionIcon>
-                      <ActionIcon
-                        className={styles.questionDelete}
-                        onClick={() => {
-                          const tempQuestions = JSON.parse(
-                            JSON.stringify(questions)
-                          );
-                          tempQuestions.splice(questionIndex, 1);
-                          setQuestions(tempQuestions);
-                        }}
-                        color="red.5"
-                        variant="light"
-                      >
-                        <IconTrash size={20} />
-                      </ActionIcon>
-                    </div>
-                  </div>
-                  <Divider my="sm"></Divider>
-                </div>
-              ))}
-              <Button
-                variant="outline"
-                className={styles.addQuestion}
-                onClick={() => {
-                  setOpened(true);
-                }}
-                color="gray"
-              >
-                Add Question
-              </Button>
-              <Center>
-                <Modal
-                  centered
-                  opened={opened}
-                  withCloseButton
-                  onClose={() => setOpened(false)}
-                  size="lg"
-                  position={{ top: 20, left: 20 }}                  
-                  radius="md"
+                  ))}
+                <Button
+                  variant="outline"
+                  className={styles.addQuestion}
+                  onClick={() => {
+                    setOpened(true);
+                  }}
+                  color="gray"
                 >
-                  <TextInput
-                    className={styles.questionTitle}
-                    placeholder="Question"
-                    label="Question"
-                    value=""
-                  />
-                  <Select
-                    label="Question Type"
-                    placeholder="Pick one"
-                    value={newQuestion.type}
-                    // onChange={(value) => {
-                    //   const tempQuestions = [...questions];
-                    //   tempQuestions[questionIndex].type = value;
-                    //   console.log(value);
-                    //   setQuestions(tempQuestions);
-                    // }}
-                    data={[
-                      { value: "single", label: "Single Choice" },
-                      { value: "multiple", label: "Multiple Choice" },
-                      { value: "text", label: "Text" },
-                      { value: "number", label: "Number" },
-                    ]}
-                    className={styles.questionType}
-                  />
-                  {(newQuestion.type === "single" ||
-                    newQuestion.type === "multiple") && (
+                  Add Question
+                </Button>
+                <Center>
+                  <Modal
+                    centered
+                    opened={opened}
+                    withCloseButton
+                    onClose={() => setOpened(false)}
+                    size="lg"
+                    position={{ top: 20, left: 20 }}
+                    radius="md"
+                    title="Add Question"
+                  >
+                    <TextInput
+                      className={styles.questionTitle}
+                      placeholder="Question"
+                      label="Question"
+                      value={newQuestion.question}
+                      onChange={(e) => {
+                        setNewQuestion({
+                          ...newQuestion,
+                          question: e.currentTarget.value,
+                        });
+                      }}
+                    />
+                    <Select
+                      label="Question Type"
+                      placeholder="Pick one"
+                      value={newQuestion.type}
+                      data={[
+                        { value: "single", label: "Single Choice" },
+                        { value: "multiple", label: "Multiple Choice" },
+                        { value: "text", label: "Text" },
+                        { value: "number", label: "Number" },
+                      ]}
+                      className={styles.questionType}
+                      onChange={(value) => {
+                        setNewQuestion({
+                          ...newQuestion,
+                          type: value,
+                        });
+                      }}
+                      style={{ marginTop: "0.5rem" }}
+                    />
+                    {(newQuestion.type === "single" ||
+                      newQuestion.type === "multiple") && (
                       <div className={styles.questionOptions}>
-                        <Title order={5} className={styles.questionOptionsTitle}>
+                        <Title
+                          order={5}
+                          className={styles.questionOptionsTitle}
+                        >
                           Options
                         </Title>
-                        {newQuestion.meta.options.map((item, index) => (
+                        {newQuestion.metadata.options.map((item, index) => (
                           <div className={styles.questionOption} key={index}>
                             <TextInput
                               placeholder="Option Name"
                               value={item.name || ""}
                               className={styles.questionOptionInput}
                               onChange={(e) => {
-                                const tempQuestions = [...questions];
-                                tempQuestions[index].meta.options[index].name =
+                                const tempNewQuestion = JSON.parse(
+                                  JSON.stringify(newQuestion)
+                                );
+                                tempNewQuestion.metadata.options[index].name =
                                   e.currentTarget.value;
-                                setQuestions(tempQuestions);
+                                setNewQuestion(tempNewQuestion);
                               }}
                             />
                             <CloseButton
                               className={styles.questionOptionIcon}
                               variant="light"
                               onClick={() => {
-                                const tempQuestions = JSON.parse(
-                                  JSON.stringify(questions)
+                                const tempNewQuestion = JSON.parse(
+                                  JSON.stringify(newQuestion)
                                 );
-                                console.log(
-                                  JSON.parse(JSON.stringify(tempQuestions))
-                                );
-                                console.log(questionIndex);
-                                tempQuestions[questionIndex].meta.options.splice(
+                                tempNewQuestion.metadata.options.splice(
                                   index,
                                   1
                                 );
-                                console.log(
-                                  JSON.parse(JSON.stringify(tempQuestions))
-                                );
-                                setQuestions(tempQuestions);
+                                setQuestions(tempNewQuestion);
                               }}
                             />
                           </div>
@@ -274,11 +268,13 @@ const ManageForm = ({ isNew }) => {
                         <Button
                           variant="outline"
                           onClick={() => {
-                            const tempQuestions = [...questions];
-                            tempQuestions[questionIndex].meta.options.push({
+                            const tempNewQuestion = JSON.parse(
+                              JSON.stringify(newQuestion)
+                            );
+                            tempNewQuestion.metadata.options.push({
                               name: "",
                             });
-                            setQuestions(tempQuestions);
+                            setNewQuestion(tempNewQuestion);
                           }}
                           className={styles.questionOptionAdd}
                           color="gray"
@@ -287,58 +283,196 @@ const ManageForm = ({ isNew }) => {
                         </Button>
                       </div>
                     )}
-                </Modal>
-              </Center>
-            </div>
-          </Tabs.Panel>
+                    <Button
+                      variant="filled"
+                      style={{ marginTop: "1rem" }}
+                      onClick={async () => {
+                        const tempQuestions = JSON.parse(
+                          JSON.stringify(questions)
+                        );
+                        const uploadedNewQuestion = await axios.post(
+                          api.ADD_QUESTION,
+                          { ...newQuestion, formId: form._id }
+                        );
+                        tempQuestions.push(uploadedNewQuestion.data);
+                        setQuestions(tempQuestions);
+                        setNewQuestion({
+                          question: "",
+                          type: "",
+                          metadata: {
+                            options: [],
+                          },
+                        });
+                        setOpened(false);
+                      }}
+                      className={styles.questionAdd}
+                    >
+                      Add Question
+                    </Button>
+                  </Modal>
+                </Center>
+                <Center>
+                  <Modal
+                    centered
+                    opened={editOpened}
+                    withCloseButton
+                    onClose={() => setEditOpened(false)}
+                    size="lg"
+                    position={{ top: 20, left: 20 }}
+                    radius="md"
+                    title="Update Question"
+                  >
+                    <TextInput
+                      className={styles.questionTitle}
+                      placeholder="Question"
+                      label="Question"
+                      value={editQuestion?.question}
+                      onChange={(e) => {
+                        setEditQuestion({
+                          ...editQuestion,
+                          question: e.currentTarget.value,
+                        });
+                      }}
+                    />
+                    <Select
+                      label="Question Type"
+                      placeholder="Pick one"
+                      value={editQuestion?.type}
+                      data={[
+                        { value: "single", label: "Single Choice" },
+                        { value: "multiple", label: "Multiple Choice" },
+                        { value: "text", label: "Text" },
+                        { value: "number", label: "Number" },
+                      ]}
+                      className={styles.questionType}
+                      onChange={(value) => {
+                        setEditQuestion({
+                          ...editQuestion,
+                          type: value,
+                        });
+                      }}
+                      style={{ marginTop: "0.5rem" }}
+                    />
+                    {console.log("editQuestion", editQuestion)}
+                    {(editQuestion?.type === "single" ||
+                      editQuestion?.type === "multiple") && (
+                      <div className={styles.questionOptions}>
+                        <Title
+                          order={5}
+                          className={styles.questionOptionsTitle}
+                        >
+                          Options
+                        </Title>
+                        {editQuestion.metadata?.options?.map((item, index) => (
+                          <div className={styles.questionOption} key={index}>
+                            <TextInput
+                              placeholder="Option Name"
+                              value={item.name || ""}
+                              className={styles.questionOptionInput}
+                              onChange={(e) => {
+                                const tempNewQuestion = JSON.parse(
+                                  JSON.stringify(editQuestion)
+                                );
+                                tempNewQuestion.metadata.options[index].name =
+                                  e.currentTarget.value;
+                                setEditQuestion(tempNewQuestion);
+                              }}
+                            />
+                            <CloseButton
+                              className={styles.questionOptionIcon}
+                              variant="light"
+                              onClick={() => {
+                                const tempNewQuestion = JSON.parse(
+                                  JSON.stringify(editQuestion)
+                                );
+                                tempNewQuestion.metadata.options.splice(
+                                  index,
+                                  1
+                                );
+                                setQuestions(tempNewQuestion);
+                              }}
+                            />
+                          </div>
+                        ))}
+                        <Button
+                          variant="outline"
+                          onClick={() => {
+                            const tempNewQuestion = JSON.parse(
+                              JSON.stringify(editQuestion)
+                            );
 
-          <Tabs.Panel value="rules" pt="xs">
-            Rules tab content
-          </Tabs.Panel>
-        </Tabs>
+                            tempNewQuestion.metadata.options.push({
+                              name: "",
+                            });
+                            setEditQuestion(tempNewQuestion);
+                          }}
+                          className={styles.questionOptionAdd}
+                          color="gray"
+                        >
+                          Add Option
+                        </Button>
+                      </div>
+                    )}
+                    <Button
+                      variant="filled"
+                      style={{ marginTop: "1rem" }}
+                      onClick={async () => {
+                        const tempQuestions = JSON.parse(
+                          JSON.stringify(questions)
+                        );
+                        const updatedQuestion = await axios.post(
+                          api.UPDATE_QUESTION,
+                          { ...editQuestion }
+                        );
+                        tempQuestions[tempQuestions.indexOf(editQuestion)] =
+                          updatedQuestion.data;
+
+                        setQuestions(tempQuestions);
+                        setEditOpened(false);
+                        setEditQuestion(null);
+                      }}
+                      className={styles.questionAdd}
+                    >
+                      Update Question
+                    </Button>
+                  </Modal>
+                </Center>
+              </div>
+            </Tabs.Panel>
+
+            <Tabs.Panel value="rules" pt="xs">
+              Rules tab content
+            </Tabs.Panel>
+          </Tabs>
+        </div>
+        <div className={styles.rightSide}>
+          <Select
+            label="Form Status"
+            placeholder="Pick one"
+            value={form.status}
+            data={[
+              { value: "Paused", label: "Paused" },
+              { value: "Draft", label: "Draft" },
+              { value: "Live", label: "Live" },
+            ]}
+            className={styles.formStatus}
+            onChange={(value) => {
+              setForm({ ...form, status: value });
+            }}
+          />
+          <Select
+            label="Integration"
+            placeholder="Pick one"
+            value={form.integration}
+            data={[{ value: "Google Sheets", label: "Google Sheets" }]}
+            style={{
+              marginTop: "1rem",
+            }}
+          />
+        </div>
       </div>
     </div>
   );
 };
 
 export default ManageForm;
-
-
-/*
-
-                  <div className={styles.questionHeader}>
-                    <div className={styles.questionHeaderLeft}>
-                      <Badge variant="filled" color="gray.7" size="xl">
-                        {questionIndex + 1}
-                      </Badge>
-                      <TextInput
-                        className={styles.questionTitle}
-                        placeholder="Question"
-                        label="Question"
-                        value={question.question || ""}
-                        onChange={(e) => {
-                          const tempQuestions = [...questions];
-                          tempQuestions[questionIndex].question =
-                            e.currentTarget.value;
-                          setQuestions(tempQuestions);
-                        }}
-                      />
-                    </div>
-                    <div className={styles.questionHeaderRight}>
-                      <ActionIcon
-                        className={styles.questionDelete}
-                        onClick={() => {
-                          const tempQuestions = JSON.parse(
-                            JSON.stringify(questions)
-                          );
-                          tempQuestions.splice(questionIndex, 1);
-                          setQuestions(tempQuestions);
-                        }}
-                        color="red.5"
-                        variant="light"
-                      >
-                        <IconTrash size={20} />
-                      </ActionIcon>
-                    </div>
-                  </div>
-*/

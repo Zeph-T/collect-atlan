@@ -33,7 +33,7 @@ const questionSchema = mongoose.Schema({
         enum : questionTypes
     },
     metadata : {
-        optionLabels : []
+        options : []
     }
 })
 
