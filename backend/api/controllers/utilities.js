@@ -5,6 +5,11 @@ const questionTypes = [
     "NUMBER"
 ]
 
+const integrations = [
+    "GOOGLE_SHEETS"
+]
+
 module.exports = {
-    questionTypes
+    questionTypes,
+    integrations
 }

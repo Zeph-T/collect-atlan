@@ -9,4 +9,4 @@ const responseSchema = mongoose.Schema({
     
 },{strict : false})
 
-module.exports = mongoose.Schema(responseSchema,"response")
+export default mongoose.model("response",responseSchema)

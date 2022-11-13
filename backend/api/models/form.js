@@ -8,7 +8,8 @@ const formSchema = mongoose.Schema({
     },
     status : {
         type : String,
-        enum : ["Paused" , "Draft" , "Live"]
+        enum : ["Paused" , "Draft" , "Live"],
+        default : "Draft"
     },
     createdOn : {
         type  : Date,
@@ -20,4 +21,4 @@ const formSchema = mongoose.Schema({
     }
 })
 
-module.exports = mongoose.Schema(formSchema,"forms")
+export default mongoose.model("forms",formSchema)

@@ -5,4 +5,5 @@ module.exports = (router) => {
         return res.send("Integrations Up and Running!");
     })
     router.post("/connect",GoogleSheetsApi.trackDataGoogleSheet)
+    router.post("/add/:formId",GoogleSheetsApi.appendDataGoogleSheet);
 }
