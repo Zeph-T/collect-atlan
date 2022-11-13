@@ -11,11 +11,11 @@ const formSchema = mongoose.Schema({
         enum : ["Paused" , "Draft" , "Live"],
         default : "Draft"
     },
-    createdOn : {
+    published : {
         type  : Date,
         default : Date.now
     },
-    updatedOn : {
+    modified : {
         type : Date,
         default : Date.now
     }

@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 const {questionTypes} = require("../controllers/utilities")
 
 const questionSchema = mongoose.Schema({
-    name : {
+    question : {
         type : String,
         requried : true
     },

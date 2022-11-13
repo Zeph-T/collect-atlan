@@ -1,8 +1,8 @@
 const questionTypes = [
-    "SINGLE_CHOICE",
-    "MULTIPLE_CHOICE",
-    "TEXT",
-    "NUMBER"
+    "single",
+    "multiple",
+    "text",
+    "number"
 ]
 
 const integrations = [

@@ -1,7 +1,7 @@
 import express from 'express';
 import mongoose from 'mongoose';
 var bodyParser = require('body-parser');
-
+import cors from "cors";
 const mongodb_url = process.env.MONGODB_CONN_STRING
 
 mongoose.connect(mongodb_url,{ useNewUrlParser: true, useUnifiedTopology: true}).then(()=>{
@@ -17,7 +17,7 @@ app.use(bodyParser.json());
 var api = express.Router();
 var integrations = express.Router();
 
-
+app.use(cors());
 require('./routes/secure')(api);
 app.use('/api',api);
 

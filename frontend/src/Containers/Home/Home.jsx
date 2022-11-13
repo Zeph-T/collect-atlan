@@ -5,6 +5,8 @@ import { Tabs } from "@mantine/core";
 import { IconPhoto, IconMessageCircle, IconSettings } from "@tabler/icons";
 import styles from "./Home.module.css";
 import { Link } from "react-router-dom";
+import * as api from "../../Utils/constants";
+import axios from "axios";
 
 const Home = () => {
   const exampleState = useSelector((state) => state.example.exampleState);
@@ -16,6 +18,15 @@ const Home = () => {
 
   const fetchForms = async () => {
     try {
+      const { data }  = await axios.get(api.GET_ALL_FORMS);
+      const form_data = data.map(form=>{
+        return {
+          ...form,
+          questions : [],
+          responses : []
+        }
+      })
+      console.log("response data",data);
       const tempData = new Array(10).fill({}).map((_, i) => ({
         _id: i,
         name: `Form ${i}`,
@@ -47,7 +58,7 @@ const Home = () => {
             })),
           })),
       }));
-      setForms(tempData);
+      setForms(form_data);
     } catch (err) {
       alert(err);
       console.log(err);
@@ -71,7 +82,7 @@ const Home = () => {
       </div>
       <div className={styles.formsList}>
         {forms.map((form) => (
-          <Link to={"/manage-form/" + form._id} className={styles.formCard}>
+          <Link to={"/manage-form/" + form._id} state = {{form : form}} className={styles.formCard}>
             <div className={styles.formCardHeader}>
               <Title order={4}>{form.name}</Title>
               <Badge>{form.status}</Badge>
