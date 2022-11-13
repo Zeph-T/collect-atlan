@@ -13,4 +13,4 @@ const responseSchema = mongoose.Schema({
     }
 },{strict : false})
 
-export default mongoose.model("responses",responseSchema)
+export default responseSchema;
