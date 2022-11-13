@@ -28,8 +28,7 @@ const ManageForm = ({ isNew }) => {
   const [questions, setQuestions] = React.useState([]);
 
   useEffect(() => {
-    // !isNew && fetchForms();
-    fetchForms();
+    !isNew && fetchForms();
   }, []);
 
   const fetchForms = async () => {
