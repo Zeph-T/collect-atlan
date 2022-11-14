@@ -23,11 +23,13 @@ import {
   IconListCheck,
   IconTrash,
   IconEdit,
+  IconLink as ExternalLinkIcon,
 } from "@tabler/icons";
 import styles from "./ManageForm.module.css";
 import { Link, useParams, useLocation } from "react-router-dom";
 import axios from "axios";
 import * as api from "../../Utils/constants";
+import { ReactComponent as GoogleSheetsLogo } from "./Google_Sheets_Logo.svg";
 
 const ManageForm = ({ isNew }) => {
   const [form, setForm] = React.useState([]);
@@ -460,7 +462,7 @@ const ManageForm = ({ isNew }) => {
               setForm({ ...form, status: value });
             }}
           />
-          <Select
+          {/* <Select
             label="Integration"
             placeholder="Pick one"
             value={form.integration}
@@ -468,7 +470,38 @@ const ManageForm = ({ isNew }) => {
             style={{
               marginTop: "1rem",
             }}
-          />
+          /> */}
+          <Title
+            order={5}
+            style={{
+              marginTop: "1rem",
+            }}
+          >
+            Integrations
+          </Title>
+          <Button
+            variant="outline"
+            color="green"
+            leftIcon={<GoogleSheetsLogo />}
+            style={{
+              marginTop: "0.5rem",
+            }}
+          >
+            Connect to Google Sheets
+          </Button>
+          {/* If connected to google sheets */}
+          <Button
+            component="a"
+            variant="filled"
+            href="/#google-sheets"
+            color="green"
+            style={{
+              marginTop: "0.5rem",
+            }}
+            rightIcon={<ExternalLinkIcon size={18} />}
+          >
+            Visit Google Sheet
+          </Button>
         </div>
       </div>
     </div>
