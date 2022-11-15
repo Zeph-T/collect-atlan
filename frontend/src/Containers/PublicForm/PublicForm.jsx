@@ -16,6 +16,7 @@ import {
   CopyButton,
   Checkbox,
   NumberInput,
+  Center,
 } from "@mantine/core";
 import { Tabs } from "@mantine/core";
 import {
@@ -27,7 +28,7 @@ import {
   IconCheck,
   IconCopy,
 } from "@tabler/icons";
-import styles from "./PreviewForm.module.css";
+import styles from "./PublicForm.module.css";
 import { Link, useParams } from "react-router-dom";
 import axios from "axios";
 import * as api from "../../Utils/constants";
@@ -36,22 +37,55 @@ const parseQuestionKey = (key) => {
   return key?.replace(/\s+/g, "_").toLowerCase();
 };
 
-const PreviewForm = ({}) => {
+const PublicForm = ({ }) => {
   const [form, setForm] = React.useState({});
   const [answers, setAnswers] = React.useState({});
   const { formId } = useParams();
-
+  const [accepting, setAccepting] = React.useState(true);
+  const [submitted , setSubmitted] = React.useState(false);
   useEffect(() => {
     fetchFormData();
   }, []);
+
+  const submitResponse = async () => {
+    try{
+      console.log(answers);
+      const {data} = await axios.post(api.SUBMIT_FORM_URL + formId, answers);
+      if(data.status && data.status === "Submitted!"){
+        setSubmitted(true);
+      }
+    }catch(err){
+      console.log(err);
+      alert(err);
+    }
+
+  }
+
+  const displayMiddle = (message) => {
+    return (
+      <div style={{
+        height: "100vh",
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center"
+      }}>
+        <Title align="center">
+          {message}
+        </Title>
+      </div>
+    )
+  }
 
   const fetchFormData = async () => {
     try {
       const fetcehedForm = async () => {
         try {
-          const { data } = await axios.get(api.GET_FORM_DATA_BY_ID + formId);
-          console.log(data);
-          setForm(data);
+          const { data } = await axios.get(api.PUBLIC_FORM_DATA + formId , answers);
+          if (data && data.status !== "Live") {
+            setAccepting(false);
+          } else {
+            setForm(data);
+          }
         } catch (err) {
           alert(err);
           console.log(err);
@@ -63,6 +97,16 @@ const PreviewForm = ({}) => {
       console.log(err);
     }
   };
+
+  if (!accepting) {
+    return displayMiddle("This Form is not accepting responses at the moment");
+  }
+
+  if(submitted){
+    return displayMiddle("Submission Recorded!")
+  }
+
+
 
   return (
     <div className={styles.container}>
@@ -171,10 +215,13 @@ const PreviewForm = ({}) => {
             </div>
           ))}
 
+          <Button variant="outline" onClick={submitResponse} className={styles.addQuestion} color="gray">
+            Submit
+          </Button>
         </div>
       </div>
     </div>
   );
 };
 
-export default PreviewForm;
+export default PublicForm;

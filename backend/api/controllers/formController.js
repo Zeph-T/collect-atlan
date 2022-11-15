@@ -73,3 +73,36 @@ export function createForm(req, res) {
     return res.status(400).json(err);
   }
 }
+
+
+export async function getFormShared(req, res) {
+  try {
+    if (req.params && req.params.id) {
+      let formData = await Form.findOne({
+        _id: mongoose.Types.ObjectId(req.params.id),
+        isValid: true,
+      });
+
+      if(formData.status !== "Live")return res.status(200).send({status : formData.status})
+        
+
+      const questionsData = await Question.find({
+        formId: mongoose.Types.ObjectId(req.params.id),
+        isValid: true,
+      })
+        .sort({ _id: 1 })
+        .exec();
+      console.log(JSON.parse(JSON.stringify(formData)));
+      console.log("questionsData", JSON.parse(JSON.stringify(questionsData)));
+
+      formData = JSON.parse(JSON.stringify(formData));
+      formData.questions = questionsData;
+      console.log(formData)
+      return res.status(200).send(formData);
+    } else {
+      throw new Error("Form ID not found!");
+    }
+  } catch (err) {
+    return res.status(400).json(err);
+  }
+}

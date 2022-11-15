@@ -113,7 +113,7 @@ export async function appendDataGoogleSheet(formId , formResponse,oIntegration) 
                         await addDataSpreadSheet(sheets, spreadsheetId, keys);
                         await makeHeaderBold(sheets, spreadsheetId);
                     }
-                    const values = [Object.values(obj)];
+                    const values = [Object.values(obj).map(value=>value.toString())];
                     await addDataSpreadSheet(sheets, spreadsheetId, values)
             })
         } else {

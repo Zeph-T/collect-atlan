@@ -5,7 +5,6 @@ import mongoose from "mongoose";
 
 exports.handler = async function(event,context){
     try{
-        console.log(event);
         let response = event.fullDocument;
         const formData = response.data;
         const formId = response.formId;
